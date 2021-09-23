@@ -1,3 +1,24 @@
+偶然看到这个项目，很惊喜，感谢[@Hcreak](https://github.com/Hcreak)。  
+
+发现大家关于 HomeKit 的 HeaterCooler 类型持放弃态度，基本都把空调转向了 Thermostat 类型，这样失去了很多 HeaterCooler 的特性能力，我觉得得不偿失。  
+
+我尝试了一下 Siri 调温的策略，Siri 调温是基于当前温度 `CurrentTemperature` 来做设定的，但是在不连接外部温度传感器的情况下，如何给定这个值呢。  
+
+很简单！制冷模式下，我们只需要给一个比设定温度高的值就可以获得一个 '正在制冷' 的状态，制热同理，那我们怎么知道空调在制冷呢。  
+
+同样很简单！首先感谢[@Hcreak](https://github.com/Hcreak)的铺路，我们可以通过对空调当前的功率的判断来知晓空调的工作状态。
+
+我这里是 5s 查询一次，如果功率很低，说明压缩机没有在工作，这个时候就可以给 `CurrentHeaterCoolerState` 一个值 `1` 实现 HomeKit 中空调状态显示为 '闲置'，并将 `CurrentTemperature` 设置为和设定温度一样，此时用 Siri 调温就是以当前设定温度为基础调温。  
+如果功率很高，说明压缩机在工作，HomeKit 中空调状态就会显示为 '正调低至' 或 '正调高至'，此时 Siri 会用很聪明的方式回答你的调温请求，自己试试吧！  
+
+只留下了核心内容，去掉了 web 和 sql 部分，意在提供思路。  
+
+目前自动模式没有做特殊修改，因为 HomeKit 空调的自动模式会同时使用 `CoolingThresholdTemperature` 与 `HeatingThresholdTemperature` 两个设定值，目前没有想出用户友好的解决方案，建议不用自动模式。
+
+由于 HomeKit 没有自动风速选项，我的解决方案是滑条滑到最左也就是风速值为 0 时，会给空调伴侣发送自动风速指令，同时，在下一个 5s 后，会返回一个当前风速现实到滑条上。
+
+---
+
 # HomeKit-MiAcPartnerMcn02
 
 专用于丐版粗粮空调伴侣2（lumi.acpartner.mcn02） 接入HomeKit
